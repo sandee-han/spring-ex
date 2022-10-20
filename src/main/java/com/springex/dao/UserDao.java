@@ -45,24 +45,24 @@ public class UserDao {
 
     public User findById(String id) {
         Map<String, String> env = System.getenv();
-        Connection c;
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             // DB접속 (ex sql workbeanch실행)
             c = cm.makeConnection();
-
             // Query문 작성
-            PreparedStatement pstmt = c.prepareStatement("SELECT * FROM users WHERE id = ?");
-            pstmt.setString(1, id);
-
+            ps = c.prepareStatement("SELECT * FROM users WHERE id = ?");
+            ps.setString(1, id);
             // Query문 실행
-            ResultSet rs = pstmt.executeQuery();
+            rs = ps.executeQuery();
             User user = null;
             if(rs.next()) {
                 user = new User(rs.getString("id"), rs.getString("name"),
                         rs.getString("password"));
             }
             rs.close();
-            pstmt.close();
+            ps.close();
             c.close();
 
             if(user == null) throw new EmptyResultDataAccessException(1);
@@ -75,29 +75,65 @@ public class UserDao {
     }
 
     public void deleteAll() throws  SQLException {
-        Connection c = cm.makeConnection();
+        Connection c= null;
+        PreparedStatement ps = null;
 
-        PreparedStatement ps = c.prepareStatement("DELETE FROM users");
-        ps.executeUpdate();
-
-        ps.close();
-        c.close();
+        try {
+            c = cm.makeConnection();
+            ps = c.prepareStatement("DELETE FROM users");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally { // 에러가 나도 실행되는 블럭
+            if(ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if(c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
     }
 
     public int getCount() throws SQLException {
-        Connection c = cm.makeConnection();
+        Connection c = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
-        PreparedStatement ps = c.prepareStatement("SELECT COUNT(*) FROM users");
+        try {
+            c = cm.makeConnection();
+            ps = c.prepareStatement("SELECT COUNT(*) FROM users");
+            rs = ps.executeQuery();
+            rs.next();
+            return rs.getInt(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
 
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
-
-        rs.close();
-        ps.close();
-        c.close();
-
-        return count;
     }
 
 
