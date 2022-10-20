@@ -8,6 +8,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -29,8 +31,21 @@ class UserDaoTest {
     }
 
     @Test
-    void delete() {
+    void count() throws SQLException {
+        User user1 = new User("1", "ramen", "11213");
+        User user2 = new User("2", "udon", "12412");
+        User user3 = new User("3", "pasta", "1q2w3e");
+
         UserDao userDao = context.getBean("awsUserDao", UserDao.class);
+        userDao.deleteAll();
+        assertEquals(0, userDao.getCount());
+
+        userDao.add(user1);
+        assertEquals(1, userDao.getCount());
+        userDao.add(user2);
+        assertEquals(2, userDao.getCount());
+        userDao.add(user3);
+        assertEquals(3, userDao.getCount());
 
     }
 }
