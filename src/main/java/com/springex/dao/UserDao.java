@@ -20,6 +20,32 @@ public class UserDao {
         this.cm = new AwsConnectionMaker();
     }
 
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
+        Connection c = null;
+        PreparedStatement ps = null;
+
+        try {
+            c = cm.makeConnection();
+            ps = new DeleteAllStrategy().makePreparedStatement(c);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally { // 에러가 나도 실행되는 블럭
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                }
+            }
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                }
+            }
+        }
+    }
+
     public void add(User user) {
         Map<String, String> env = System.getenv();
         try {
@@ -78,26 +104,7 @@ public class UserDao {
         Connection c = null;
         PreparedStatement ps = null;
 
-        try {
-            c = cm.makeConnection();
-            ps = new DeleteAllStrategy().makePreparedStatement(c);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally { // 에러가 나도 실행되는 블럭
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
-            }
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
+        jdbcContextWithStatementStrategy(new DeleteAllStrategy());
     }
 
     public int getCount() throws SQLException {
