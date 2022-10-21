@@ -5,9 +5,9 @@ import org.springframework.context.annotation.Bean;
 
 @Configurable
 public class UserDaoFactory {
-
     @Bean
     public UserDao awsUserDao() {
         return new UserDao(new AwsConnectionMaker());
     }
+    // TODO : 주석 삭제해주세요
 }

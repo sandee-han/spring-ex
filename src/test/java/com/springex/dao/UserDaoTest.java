@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,10 +15,10 @@ import java.sql.SQLException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = UserDaoFactory.class)
 class UserDaoTest {
-
     @Autowired
     ApplicationContext context;
 
@@ -32,7 +33,6 @@ class UserDaoTest {
 
     @Test
     void addAndGet() throws SQLException {
-
         // user 1, 2, 3 가 픽스처
         this.user1 = new User("1", "ramen", "11213");
         this.user2 = new User("2", "udon", "12412");
@@ -48,7 +48,6 @@ class UserDaoTest {
         assertEquals("EternityHwan", user.getName());
         assertEquals("1234", user.getPassword());
     }
-
     @Test
     void count() throws SQLException {
         this.user1 = new User("1", "ramen", "11213");
@@ -64,13 +63,12 @@ class UserDaoTest {
         assertEquals(2, userDao.getCount());
         userDao.add(user3);
         assertEquals(3, userDao.getCount());
-
     }
 
     @Test
     void findById() {
         assertThrows(EmptyResultDataAccessException.class, () -> {
-            userDao.findById("30");
+            userDao.findById("1");
         });
     }
 }
