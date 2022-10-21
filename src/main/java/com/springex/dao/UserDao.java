@@ -23,10 +23,9 @@ public class UserDao {
     public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
         Connection c = null;
         PreparedStatement ps = null;
-
         try {
             c = cm.makeConnection();
-            ps = new DeleteAllStrategy().makePreparedStatement(c);
+            ps = stmt.makePreparedStatement(c);
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -46,27 +45,9 @@ public class UserDao {
         }
     }
 
-    public void add(User user) {
-        Map<String, String> env = System.getenv();
-        try {
-            // DB접속 (ex sql workbeanch실행)
-            Connection c = cm.makeConnection();
-
-            // Query문 작성
-            PreparedStatement ps = c.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
-            ps.setString(1, user.getId());
-            ps.setString(2, user.getName());
-            ps.setString(3, user.getPassword());
-
-            // Query문 실행
-            ps.executeUpdate();
-
-            ps.close();
-            c.close();
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public void add(User user) throws SQLException {
+        AddStrategy addStrategy = new AddStrategy(user);
+        jdbcContextWithStatementStrategy(addStrategy);
     }
 
     public User findById(String id) {
@@ -90,8 +71,6 @@ public class UserDao {
             rs.close();
             ps.close();
             c.close();
-
-            if (user == null) throw new EmptyResultDataAccessException(1);
 
             return user;
 

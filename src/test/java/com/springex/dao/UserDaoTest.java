@@ -33,12 +33,12 @@ class UserDaoTest {
 
     @Test
     void addAndGet() throws SQLException {
+//        userDao.deleteAll();
         // user 1, 2, 3 가 픽스처
         this.user1 = new User("1", "ramen", "11213");
         this.user2 = new User("2", "udon", "12412");
         this.user3 = new User("3", "pasta", "1q2w3e");
 
-        userDao.deleteAll();
         assertEquals(0, userDao.getCount());
 
         String id = "29";
