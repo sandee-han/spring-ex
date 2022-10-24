@@ -3,6 +3,7 @@ package com.springex.dao;
 import com.springex.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,8 +13,10 @@ import java.util.Map;
 public class UserDao {
     private ConnectionMaker cm;
 
-    public UserDao(ConnectionMaker cm) {
-        this.cm = cm;
+    private DataSource dataSource;
+
+    public UserDao(DataSource dataSource) {
+        this.dataSource = dataSource;
     }
 
     public UserDao() {
@@ -24,7 +27,7 @@ public class UserDao {
         Connection c = null;
         PreparedStatement ps = null;
         try {
-            c = cm.makeConnection();
+            c = dataSource.getConnection();
             ps = stmt.makePreparedStatement(c);
             ps.executeUpdate();
         } catch (SQLException e) {

@@ -71,4 +71,5 @@ class UserDaoTest {
             userDao.findById("1");
         });
     }
+
 }
