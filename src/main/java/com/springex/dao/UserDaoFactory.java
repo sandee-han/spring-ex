@@ -1,8 +1,5 @@
 package com.springex.dao;
 
-import net.bytebuddy.utility.nullability.MaybeNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -12,17 +9,18 @@ import java.util.Map;
 
 @Configuration
 public class UserDaoFactory {
-
+    DataSource dataSource;
+    JdbcContext jdbcContext = new JdbcContext(dataSource);
 
     @Bean
     UserDao awsUserDao() {
-        return new UserDao(awsDataSource());
+        return new UserDao(awsDataSource(), jdbcContext);
     }
     // TODO : 주석 삭제해주세요
 
     @Bean
     UserDao localUserDao(){
-        return new UserDao(localDataSource());
+        return new UserDao(localDataSource(), jdbcContext);
     }
 
     @Bean

@@ -1,7 +1,6 @@
 package com.springex.dao;
 
 import com.springex.domain.User;
-import org.springframework.dao.EmptyResultDataAccessException;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -13,44 +12,29 @@ import java.util.Map;
 public class UserDao {
     private ConnectionMaker cm;
 
-    private DataSource dataSource;
+    private DataSource dataSource;  // DataSoucre를 의존하게 변경
+    private JdbcContext jdbcContext;
 
-    public UserDao(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public UserDao(DataSource dataSource, JdbcContext jdbcContext) {
+        this.dataSource = dataSource;   // 생성자도 변경
+        this.jdbcContext = new JdbcContext(dataSource);
     }
 
     public UserDao() {
         this.cm = new AwsConnectionMaker();
     }
 
-    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
-        try {
-            c = dataSource.getConnection();
-            ps = stmt.makePreparedStatement(c);
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } finally { // 에러가 나도 실행되는 블럭
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e) {
-                }
+    public void add(final User user) throws SQLException {
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement pstmt = connection.prepareStatement("INSERT INTO users(id, name, password) VALUES(?,?,?);");
+                pstmt.setString(1, user.getId());
+                pstmt.setString(2, user.getName());
+                pstmt.setString(3, user.getPassword());
+                return pstmt;
             }
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e) {
-                }
-            }
-        }
-    }
-
-    public void add(User user) throws SQLException {
-        AddStrategy addStrategy = new AddStrategy(user);
-        jdbcContextWithStatementStrategy(addStrategy);
+        });
     }
 
     public User findById(String id) {
@@ -83,10 +67,12 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        Connection c = null;
-        PreparedStatement ps = null;
-
-        jdbcContextWithStatementStrategy(new DeleteAllStrategy());
+        jdbcContext.workWithStatementStrategy(new StatementStrategy() {
+            @Override
+            public PreparedStatement makePreparedStatement(Connection connection) throws SQLException {
+                return connection.prepareStatement("DELETE FROM users");
+            }
+        });
     }
 
     public int getCount() throws SQLException {
